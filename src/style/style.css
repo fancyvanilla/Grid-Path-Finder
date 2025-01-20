@@ -1,0 +1,63 @@
+body {
+    overflow: hidden;
+    
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(60, 1fr); 
+    grid-template-rows: repeat(50, auto);
+    gap: 2px; 
+    width: 1200px;
+    background-color: #f0f0f0; 
+    padding: 10px;
+    box-sizing: border-box;
+    margin: 0 auto;
+    /* margin-top: 20px; */
+    height: auto;
+    padding-bottom: 0px;
+
+}
+
+.grid-item {
+    background-color: rgb(189, 188, 188); 
+    color: white;
+    text-align: center;
+    box-sizing: border-box;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 20px;
+    cursor: pointer;
+}
+
+
+h1{
+    text-align: center;
+}
+
+.obstacle{
+    background-color: green;
+}
+
+.start{
+    background-color: red;
+}
+.end{
+    background-color: blue;
+}
+
+.controls{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.visited{
+    background-color: rgb(186, 208, 215);
+}
+.path{
+    background-color: purple;
+}
