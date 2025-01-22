@@ -5,6 +5,11 @@ let user_start=false
 let user_end=false
 let start_node:Cell;
 let end_node:Cell;
+const button = document.getElementById('bfs') as HTMLButtonElement;
+const button2 = document.getElementById('dfs') as HTMLButtonElement;
+const button3 = document.getElementById('astar') as HTMLButtonElement;
+const clearButton=document.getElementById('clear') as HTMLButtonElement;
+
 
 type Cell =HTMLElement | null | undefined
 
@@ -71,10 +76,9 @@ function addNodes(){
                     item.classList.add('end');
                     user_end=true;
                     end_node=item;
-                    const button = document.getElementById('bfs') as HTMLButtonElement;
-                    const button2 = document.getElementById('dfs') as HTMLButtonElement;
                     button.addEventListener('click', () => FS(SerachType.BFS));
                     button2.addEventListener('click', () => FS(SerachType.DFS));
+                    button3.addEventListener('click', () => AStar());
                     return;
                 }
         }
@@ -84,7 +88,6 @@ function addNodes(){
 }
 
 function handleUI(){
-    const clearButton=document.getElementById('clear') as HTMLButtonElement;
     clearButton.addEventListener('click',()=>{
     clearGrid();
 })
@@ -108,16 +111,28 @@ function getNeighbors(cell:Cell):Cell[]{
     return neighbors;
 }
 
+function displayNodes(visited_nodes:Cell[],path:Cell[]){
+    for(const node of visited_nodes){
+        if(node?.classList.contains('start')) continue;
+        if(node?.classList.contains('end')) continue;
+        node?.classList.add('visited')
+    }
+    for(const node of path){
+        if(node?.classList.contains('start')) continue;
+        node?.classList.add('path')
+    }
+    button.classList.add('hidden') 
+    button2.classList.add('hidden')
+    button3.classList.add('hidden')
+}
+
 function FS(type: SerachType){
     const start = performance.now();
+    if(!start_node || !end_node) return;
     let visited:Map<string,visitedNode> = new Map();
     let queue:Cell[]=[]
     let path: Cell[]=[]
     let stats:Stats;
-   if(!start_node){
-    console.log('No start node')
-    return
-   }
     queue.push(start_node);
     visited.set(start_node.id, {
         parent: null,
@@ -138,7 +153,7 @@ function FS(type: SerachType){
         neighbors=getNeighbors(current)
 
         for(const neighbor of neighbors){
-            if (neighbor && !neighbor?.classList.contains('obstacle') && !neighbor?.classList.contains('start') && !visited.has(neighbor.id)) {
+            if (neighbor && !neighbor?.classList.contains('obstacle') && !visited.has(neighbor.id)) {
                 visited.set(neighbor.id, {
                     parent: current,
                     current: neighbor
@@ -153,17 +168,71 @@ function FS(type: SerachType){
         time: (end-start).toFixed(2)+"ms"
     }
     console.log(stats);
-    for(const node of visited.values()){
-        if(node.current?.classList.contains('start')) continue;
-        if(node.current?.classList.contains('end')) continue;
-        node.current?.classList.add('visited')
-    }
+    displayNodes(Array.from(visited.values()).map((node:visitedNode) => node.current),path)
+}
 
-    for(const node of path){
-        if(node?.classList.contains('start')) continue;
-        node?.classList.add('path')
-    }
-    
+function AStar(){
+    const start = performance.now();
+    if(!start_node || !end_node) return;
+    let found=false
+    let visited:Map<string,visitedNode> = new Map();
+    let values:Map<string, Number> =new Map();
+    let path:Cell[]=[];
+    let current:Cell=start_node
+    visited.set(start_node.id, {
+        parent: null,
+        current: current,
+    });
+    while(!found){
+        let neighbors=getNeighbors(current)
+        let min:Number = Number.POSITIVE_INFINITY;
+        let min_key=null
+        for(const neighbor of neighbors){
+           if(!neighbor) continue;
+            if(!neighbor?.classList.contains('obstacle') && !visited.has(neighbor.id)){
+                visited.set(neighbor.id, {
+                    parent: current,
+                    current: neighbor
+                })
+                if(neighbor.classList.contains('end')){
+                    let node:visitedNode | undefined =visited.get(neighbor.id)
+                    while(node?.parent){             
+                       path.unshift(node.parent)
+                       node = visited.get(node.parent.id)
+                   }
+                   found=true;
+                    break;
+                };
+                let f:Number = parseInt(neighbor?.id || '0') + Math.abs(parseInt(neighbor?.id || '0') - parseInt(end_node?.id || '0'));
+                values.set(neighbor.id,f)
+        }
+} 
+        if(!found){
+            for(const [key,value] of values){
+                if(value < min){
+                    min=value
+                    min_key=key
+                }
+            }
+            if (min_key !== null) {
+                values.delete(min_key);
+                current=document.getElementById(min_key.toString())        
+            }
+            else{
+                console.log("No path found!")
+                break;
+            }
+       }
+        
+}
+   const end = performance.now();
+
+   let stats:Stats={
+    visited: visited.size,
+    time:(end-start).toFixed(2)+"ms"
+   } 
+   console.log(stats)
+   displayNodes(Array.from(visited.values()).map((node:visitedNode)=>node.current),path)  
 }
 
 function clearGrid(){
@@ -173,10 +242,22 @@ function clearGrid(){
     end_node = null;
     user_start=false;
     user_end=false
+    let visited_items=document.getElementsByClassName('visited');
+    while(visited_items.length>0){
+        visited_items[0].classList.remove('visited');
+    }
+    let path_items=document.getElementsByClassName('path');
+    while(path_items.length>0){
+        path_items[0].classList.remove('path');
+    }
+    button.classList.remove('hidden')
+    button2.classList.remove('hidden')
+    button3.classList.remove('hidden')
 }
 
 createGrid();
 addObstacles();
 addNodes();
+handleUI()
 
 

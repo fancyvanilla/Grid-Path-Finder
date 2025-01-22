@@ -1,23 +1,23 @@
 body {
+    margin:0;
+    padding:0;
     overflow: hidden;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-    
 }
 
 .grid-container {
     display: grid;
     grid-template-columns: repeat(60, 1fr); 
-    grid-template-rows: repeat(50, auto);
+    grid-template-rows: repeat(auto-fit, minmax(20px,1fr)); 
     gap: 2px; 
-    width: 1200px;
+    width: 90vw;
+    min-height: 80vh; 
     background-color: #f0f0f0; 
     padding: 10px;
     box-sizing: border-box;
     margin: 0 auto;
-    /* margin-top: 20px; */
-    height: auto;
-    padding-bottom: 0px;
-
+    margin-bottom: 0px;
+    overflow: hidden;
 }
 
 .grid-item {
@@ -29,7 +29,6 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 20px;
     cursor: pointer;
 }
 
@@ -73,4 +72,8 @@ button{
 
 button:hover{
     background-color: #c5c5c5;
+}
+
+.hidden{
+    display: none; 
 }
