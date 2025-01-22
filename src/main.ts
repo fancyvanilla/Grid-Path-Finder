@@ -72,7 +72,7 @@ function addNodes(){
                     start_node=item;
                     return;
                 }
-                if(user_start && !user_end){
+                if(user_start && !user_end && !item.classList.contains('start')){
                     item.classList.add('end');
                     user_end=true;
                     end_node=item;
