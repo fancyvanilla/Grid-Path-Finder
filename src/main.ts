@@ -10,7 +10,14 @@ const button2 = document.getElementById('dfs') as HTMLButtonElement;
 const button3 = document.getElementById('astar') as HTMLButtonElement;
 const clearButton=document.getElementById('clear') as HTMLButtonElement;
 
+export {};
 
+declare global {
+    interface Window {
+        adminPanel: typeof adminPanel;
+    }
+}
+  
 type Cell =HTMLElement | null | undefined
 
 interface visitedNode {
@@ -23,10 +30,49 @@ enum SerachType{
     DFS='DFS'
 }
 
-interface Stats{
+interface Stats {
     visited:number,
-    time:string
+    time:number
 }
+
+class adminPanel{
+    constructor(){
+    }
+    test(x:number){
+        let bfs_results:Stats={
+          visited:0,
+          time:0
+        };
+        let dfs_results:Stats={
+          visited:0,
+          time:0
+        };
+        let astar_results:Stats={
+          visited:0,
+          time:0
+        };
+      
+        for(let i=0;i<x;i++){
+          randomize_gris()
+          let bfs_cur_stats=FS(SerachType.BFS)
+          bfs_results.visited+= bfs_cur_stats.visited
+          bfs_results.time+= bfs_cur_stats.time
+          let dfs_cur_stats=FS(SerachType.DFS)
+          dfs_results.visited+= dfs_cur_stats.visited
+          dfs_results.time+= dfs_cur_stats.time
+          let astar_stats=AStar()
+          astar_results.visited+= astar_stats.visited
+          astar_results.time+= astar_stats.time
+      }
+      
+      console.log("BFS results for x attemps: " +bfs_results.visited/x+" nodes, " +bfs_results.time/x+"ms")
+      console.log("DFS results for y attemps: " +dfs_results.visited/x+" nodes, " +dfs_results.time/x+"ms")
+      console.log("ASTAR results for y attemps: " +astar_results.visited/x+" nodes, " +astar_results.time/x+"ms")
+      
+      }
+}
+window.adminPanel = adminPanel;
+
 
 function getNextNode(queue:Cell[],type:SerachType){
     if(type===SerachType.BFS){
@@ -126,13 +172,16 @@ function displayNodes(visited_nodes:Cell[],path:Cell[]){
     button3.classList.add('hidden')
 }
 
-function FS(type: SerachType){
+function FS(type: SerachType):Stats{
     const start = performance.now();
-    if(!start_node || !end_node) return;
+    let stats:Stats={
+        visited: 0,
+        time: 0
+    };
+    if(!start_node || !end_node) return stats;
     let visited:Map<string,visitedNode> = new Map();
     let queue:Cell[]=[]
     let path: Cell[]=[]
-    let stats:Stats;
     queue.push(start_node);
     visited.set(start_node.id, {
         parent: null,
@@ -166,17 +215,21 @@ function FS(type: SerachType){
         } 
     }
     const end = performance.now();
-    stats={
-        visited:visited.size,
-        time: (end-start).toFixed(2)+"ms"
+    stats = {
+        visited: visited.size,
+        time: parseFloat((end - start).toFixed(2))
     }
-    console.log(stats);
     displayNodes(Array.from(visited.values()).map((node:visitedNode) => node.current),path)
+    return stats
 }
 
-function AStar(){
+function AStar():Stats{
     const start = performance.now();
-    if(!start_node || !end_node) return;
+    let stats:Stats={
+        visited: 0,
+        time: 0
+    }
+    if(!start_node || !end_node) return stats;
     let found=false
     let visited:Map<string,visitedNode> = new Map();
     let values:Map<string, Number> =new Map(); //stocker les valeurs de la fonction d'évaluation
@@ -228,7 +281,7 @@ function AStar(){
                 current=document.getElementById(min_key.toString())        
             }
             else{
-                //la file values est vide et aucun chemin n'est trouvé
+                //la file valuesest vide et aucun chemin n'est trouvé
                 console.log("No path found!")
                 break;
             }
@@ -237,12 +290,12 @@ function AStar(){
 }
    const end = performance.now();
 
-   let stats:Stats={
+   stats={
     visited: visited.size,
-    time:(end-start).toFixed(2)+"ms"
+    time: parseFloat((end-start).toFixed(2))
    } 
-   console.log(stats)
-   displayNodes(Array.from(visited.values()).map((node:visitedNode)=>node.current),path)  
+   displayNodes(Array.from(visited.values()).map((node:visitedNode)=>node.current),path)
+   return stats  
 }
 
 function clearGrid(){
@@ -265,9 +318,46 @@ function clearGrid(){
     button3.classList.remove('hidden')
 }
 
+function randomize_gris(){
+    clearGrid();
+    let obstacles=document.getElementsByClassName('obstacle');
+    while(obstacles.length>0){
+        obstacles[0].classList.remove('obstacle');
+    }
+    let lines=grid_items/items_per_line;
+    let offset=0;
+    for(let i=0;i<lines;i++){
+        for(let j=0;j<obstacles_per_line;j++){
+            let random=Math.floor(Math.random()*items_per_line)+offset;
+            let item=document.getElementById(random.toString());
+            item?.classList.add('obstacle');
+        }
+        offset+=items_per_line;
+}
+//choose random start and end cases
+while(true){
+    let random=Math.floor(Math.random()*grid_items);
+    let item=document.getElementById(random.toString());
+    if(!item?.classList.contains('obstacle')){
+        item?.classList.add("start")
+        start_node=item
+        break;
+    }
+    
+}
+while(true){
+    let random=Math.floor(Math.random()*grid_items);
+    let item=document.getElementById(random.toString());
+    if(!item?.classList.contains('obstacle') && !item?.classList.contains('start')){
+        item?.classList.add("end")
+        end_node=item
+        break;
+    }
+}
+
+}
 createGrid();
 addObstacles();
 addNodes();
 handleUI()
-
 
