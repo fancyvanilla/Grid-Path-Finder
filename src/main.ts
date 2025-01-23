@@ -141,8 +141,10 @@ function FS(type: SerachType){
     while(queue.length>0){
         let neighbors:Cell[]=[]
         const current=getNextNode(queue,type);
+        //tester si le noeud courant est la destination
         if (current?.classList.contains('end')){
 
+            //construire le chemin du destination au départ
             let node:visitedNode | undefined = visited.get(current.id);
             while(node?.parent){
                 path.unshift(node.parent);
@@ -152,6 +154,7 @@ function FS(type: SerachType){
         }
         neighbors=getNeighbors(current)
 
+      //ajouter les noeuds non visités à la file
         for(const neighbor of neighbors){
             if (neighbor && !neighbor?.classList.contains('obstacle') && !visited.has(neighbor.id)) {
                 visited.set(neighbor.id, {
@@ -176,7 +179,7 @@ function AStar(){
     if(!start_node || !end_node) return;
     let found=false
     let visited:Map<string,visitedNode> = new Map();
-    let values:Map<string, Number> =new Map();
+    let values:Map<string, Number> =new Map(); //stocker les valeurs de la fonction d'évaluation
     let path:Cell[]=[];
     let current:Cell=start_node
     visited.set(start_node.id, {
@@ -205,11 +208,15 @@ function AStar(){
                     break;
                 };
                 let current_h=Math.abs(parseInt(current?.id || '0') - parseInt(end_node?.id || '0')); 
-                let f:Number = values.get(current.id)||0 - current_h + 1+ Math.abs(parseInt(neighbor?.id || '0') - parseInt(end_node?.id || '0'));
+                let neighbor_h=Math.abs(parseInt(neighbor?.id || '0') - parseInt(end_node?.id || '0'));
+                let neighbor_d=values.get(current.id)||0 - current_h + 1
+                //fonction d'évaluation
+                let f:number = Number(neighbor_d) + neighbor_h;
                 values.set(neighbor.id,f)
         }
 } 
         if(!found){
+            //trouver le prochain noeud à explorer
             for(const [key,value] of values){
                 if(value < min){
                     min=value
@@ -221,6 +228,7 @@ function AStar(){
                 current=document.getElementById(min_key.toString())        
             }
             else{
+                //la file values est vide et aucun chemin n'est trouvé
                 console.log("No path found!")
                 break;
             }
