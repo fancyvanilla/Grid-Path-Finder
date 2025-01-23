@@ -183,7 +183,8 @@ function AStar(){
         parent: null,
         current: current,
     });
-    while(!found){
+    values.set(start_node.id,parseInt(end_node?.id || '0'));
+    while(current && !found){
         let neighbors=getNeighbors(current)
         let min:Number = Number.POSITIVE_INFINITY;
         let min_key=null
@@ -195,7 +196,7 @@ function AStar(){
                     current: neighbor
                 })
                 if(neighbor.classList.contains('end')){
-                    let node:visitedNode | undefined =visited.get(neighbor.id)
+                    let node:visitedNode | undefined = visited.get(neighbor.id)
                     while(node?.parent){             
                        path.unshift(node.parent)
                        node = visited.get(node.parent.id)
@@ -203,7 +204,8 @@ function AStar(){
                    found=true;
                     break;
                 };
-                let f:Number = parseInt(neighbor?.id || '0') + Math.abs(parseInt(neighbor?.id || '0') - parseInt(end_node?.id || '0'));
+                let current_h=Math.abs(parseInt(current?.id || '0') - parseInt(end_node?.id || '0')); 
+                let f:Number = values.get(current.id)||0 - current_h + 1+ Math.abs(parseInt(neighbor?.id || '0') - parseInt(end_node?.id || '0'));
                 values.set(neighbor.id,f)
         }
 } 
