@@ -239,19 +239,22 @@ function AStar():Stats{
         parent: null,
         current: current,
     });
-    values.set(start_node.id,parseInt(end_node?.id || '0'));
     while(current && !found){
         let neighbors=getNeighbors(current)
+        //éliminer le parent du  noeud courant de la liste des voisins
+        let parent=visited.get(current.id)?.parent
+        if (parent){
+            neighbors=neighbors.filter(n=>n?.id!==parent?.id)
+        }
         let min:Number = Number.POSITIVE_INFINITY;
         let min_key=null
         for(const neighbor of neighbors){
-           if(!neighbor) continue;
-            if(!neighbor?.classList.contains('obstacle') && !visited.has(neighbor.id)){
-                visited.set(neighbor.id, {
-                    parent: current,
-                    current: neighbor
-                })
+           if(!neighbor || neighbor?.classList.contains('obstacle')) continue;
                 if(neighbor.classList.contains('end')){
+                    visited.set(neighbor.id, {
+                        parent: current,
+                        current: neighbor
+                    })
                     let node:visitedNode | undefined = visited.get(neighbor.id)
                     while(node?.parent){             
                        path.unshift(node.parent)
@@ -264,9 +267,26 @@ function AStar():Stats{
                 let neighbor_h=Math.abs(parseInt(neighbor?.id || '0') - parseInt(end_node?.id || '0'));
                 let neighbor_d=values.get(current.id)||0 - current_h + 1
                 //fonction d'évaluation
-                let f:number = Number(neighbor_d) + neighbor_h;
-                values.set(neighbor.id,f)
-        }
+                let f:Number = Number(neighbor_d) + neighbor_h;
+                //vérifier si on a trouvé un meilleur chemin
+                    if(visited.has(neighbor.id)){
+                        let old_f=(values.get(neighbor.id) || 0)
+                        if (f<old_f){
+                            visited.set(neighbor.id, {
+                                parent: current,
+                                current: neighbor
+                            })
+                            values.set(neighbor.id,f)
+                        }
+
+                    }
+                    else {
+                        visited.set(neighbor.id, {
+                            parent: current,
+                            current: neighbor
+                        })
+                        values.set(neighbor.id,f)
+                    }
 } 
         if(!found){
             //trouver le prochain noeud à explorer
@@ -278,10 +298,10 @@ function AStar():Stats{
             }
             if (min_key !== null) {
                 values.delete(min_key);
-                current=document.getElementById(min_key.toString())        
+                current=document.getElementById(min_key.toString()) 
             }
             else{
-                //la file valuesest vide et aucun chemin n'est trouvé
+                //la file values est vide et aucun chemin n'est trouvé
                 console.log("No path found!")
                 break;
             }
